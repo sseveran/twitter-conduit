@@ -14,7 +14,8 @@ module Web.Twitter.Conduit.Stream
        , statusesFilterByFollow
        , statusesFilterByTrack
        -- , statusesFilterByLocation
-       -- , statusesSample
+       , Samplestream
+       , statusesSample
        -- , statusesFirehose
        -- , sitestream
        -- , sitestream'
@@ -95,3 +96,9 @@ deriveHasParamInstances ''StatusesFilter
     , "filter_level"
     , "stall_warnings"
     ]
+
+data Samplestream
+statusesSample :: APIRequest Samplestream StreamingAPI
+statusesSample = APIRequestGet "https://stream.twitter.com/1.1/statuses/sample.json" []
+deriveHasParamInstances ''Samplestream
+  [ "stall_warnings"]
