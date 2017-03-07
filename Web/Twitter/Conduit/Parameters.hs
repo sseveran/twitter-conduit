@@ -17,6 +17,8 @@ module Web.Twitter.Conduit.Parameters
        , HasExcludeRepliesParam (..)
        , HasContributorDetailsParam (..)
        , HasIncludeEntitiesParam (..)
+       , HasIncludeEmailParam (..)
+       , HasIncludeExtAltTextParam (..)
        , HasIncludeUserEntitiesParam (..)
        , HasIncludeRtsParam (..)
        , HasIncludeMyRetweetParam (..)
@@ -34,6 +36,12 @@ module Web.Twitter.Conduit.Parameters
        , HasFollowParam (..)
        , HasMapParam (..)
        , HasMediaIdsParam (..)
+       , HasDescriptionParam (..)
+       , HasNameParam (..)
+       , HasProfileLinkColorParam (..)
+       , HasLocationParam (..)
+       , HasUrlParam (..)
+       , HasFullTextParam (..)
 
        , UserParam(..)
        , UserListParam(..)
@@ -68,9 +76,11 @@ defineHasParamClassBool "trim_user"
 defineHasParamClassBool "exclude_replies"
 defineHasParamClassBool "contributor_details"
 defineHasParamClassBool "include_entities"
+defineHasParamClassBool "include_email"
 defineHasParamClassBool "include_user_entities"
 defineHasParamClassBool "include_rts"
 defineHasParamClassBool "include_my_retweet"
+defineHasParamClassBool "include_ext_alt_text"
 defineHasParamClassInteger "in_reply_to_status_id"
 defineHasParamClassBool "display_coordinates"
 defineHasParamClassBool "possibly_sensitive"
@@ -85,6 +95,12 @@ defineHasParamClassBool "skip_status"
 defineHasParamClassBool "follow"
 defineHasParamClassBool "map"
 defineHasParamClassIntegerArray "media_ids"
+defineHasParamClassString "description"
+defineHasParamClassString "name"
+defineHasParamClassString "profile_link_color"
+defineHasParamClassString "location"
+defineHasParamClassURI "url"
+defineHasParamClassBool "full_text"
 
 -- | converts 'UserParam' to 'HT.SimpleQuery'.
 --

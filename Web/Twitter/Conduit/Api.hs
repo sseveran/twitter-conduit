@@ -52,7 +52,8 @@ module Web.Twitter.Conduit.Api
        , accountVerifyCredentials
        -- , accountSettingsUpdate
        -- , accountUpdateDeliveryDevice
-       -- , accountUpdateProfile
+       , AccountUpdateProfile
+       , accountUpdateProfile
        -- , accountUpdateProfileBackgroundImage
        -- , accountUpdateProfileColors
        -- , accoutUpdateProfileImage
@@ -102,7 +103,8 @@ module Web.Twitter.Conduit.Api
        -- , listsSubscribersCreate
        -- , listsSubscribersShow
        -- , listsSubscribersDestroy
-       -- , listsMembersCreateAll
+       , ListsMembersCreateAll
+       , listsMembersCreateAll
        -- , listsMembersShow
        , ListsMembers
        , listsMembers
@@ -118,7 +120,8 @@ module Web.Twitter.Conduit.Api
        , listsShow
        , ListsSubscriptions
        , listsSubscriptions
-       -- , listsMembersDestroyAll
+       , ListsMembersDestroyAll
+       , listsMembersDestroyAll
        , ListsOwnerships
        , listsOwnerships
 
@@ -141,7 +144,7 @@ module Web.Twitter.Conduit.Api
        ) where
 
 import Web.Twitter.Types
-import Web.Twitter.Conduit.Parameters
+import Web.Twitter.Conduit.Parameters hiding (description, name)
 import Web.Twitter.Conduit.Parameters.TH
 import Web.Twitter.Conduit.Base
 import Web.Twitter.Conduit.Request
@@ -162,7 +165,7 @@ data SearchTweets
 --
 -- @
 -- res <- 'call' ('searchTweets' \"search text\")
--- 'liftIO' . 'print' $ res ^. 'searchResultStatuses'
+-- 'print' $ res ^. 'searchResultStatuses'
 -- @
 --
 -- >>> searchTweets "search text"
@@ -170,7 +173,7 @@ data SearchTweets
 -- >>> searchTweets "search text" & lang ?~ "ja" & count ?~ 100
 -- APIRequestGet "https://api.twitter.com/1.1/search/tweets.json" [("count","100"),("lang","ja"),("q","search text")]
 searchTweets :: T.Text -- ^ search string
-             -> APIRequest SearchTweets (SearchResult [SearchStatus])
+             -> APIRequest SearchTweets (SearchResult [Status])
 searchTweets q = APIRequestGet (endpoint ++ "search/tweets.json") [("q", PVString q)]
 deriveHasParamInstances ''SearchTweets
     [ "lang"
@@ -186,7 +189,7 @@ deriveHasParamInstances ''SearchTweets
 
 -- | Alias of 'searchTweets', for backward compatibility
 search :: T.Text -- ^ search string
-       -> APIRequest SearchTweets (SearchResult [SearchStatus])
+       -> APIRequest SearchTweets (SearchResult [Status])
 search = searchTweets
 
 data DirectMessages
@@ -210,6 +213,7 @@ deriveHasParamInstances ''DirectMessages
     , "count"
     , "include_entities"
     , "skip_status"
+    , "full_text"
     ]
 
 data DirectMessagesSent
@@ -234,6 +238,7 @@ deriveHasParamInstances ''DirectMessagesSent
     , "include_entities"
     , "page"
     , "skip_status"
+    , "full_text"
     ]
 
 data DirectMessagesShow
@@ -249,6 +254,9 @@ data DirectMessagesShow
 -- APIRequestGet "https://api.twitter.com/1.1/direct_messages/show.json" [("id","1234567890")]
 directMessagesShow :: StatusId -> APIRequest DirectMessagesShow DirectMessage
 directMessagesShow sId = APIRequestGet (endpoint ++ "direct_messages/show.json") [("id", PVInteger sId)]
+deriveHasParamInstances ''DirectMessagesShow
+    [ "full_text"
+    ]
 
 data DirectMessagesDestroy
 -- | Returns post data which destroys the direct message specified in the required ID parameter.
@@ -506,6 +514,31 @@ accountVerifyCredentials = APIRequestGet (endpoint ++ "account/verify_credential
 deriveHasParamInstances ''AccountVerifyCredentials
     [ "include_entities"
     , "skip_status"
+    , "include_email"
+    ]
+
+data AccountUpdateProfile
+-- | Returns user object with updated fields.
+-- Note that while no specific parameter is required, you need to provide at least one parameter before executing the query.
+--
+-- You can perform request by using 'call':
+--
+-- @
+-- res <- 'call' twInfo mgr '$' 'accountUpdateProfile' & 'Web.Twitter.Conduit.Parameters.url' ?~ \"http://www.example.com\"
+-- @
+--
+-- >>> accountUpdateProfile & url ?~ "http://www.example.com"
+-- APIRequestPost "https://api.twitter.com/1.1/account/update_profile.json" [("url","http://www.example.com")]
+accountUpdateProfile :: APIRequest AccountUpdateProfile User
+accountUpdateProfile = APIRequestPost (endpoint ++ "account/update_profile.json") []
+deriveHasParamInstances ''AccountUpdateProfile
+    [ "include_entities"
+    , "skip_status"
+    , "name"
+    , "url"
+    , "location"
+    , "description"
+    , "profile_link_color"
     ]
 
 data UsersLookup
@@ -735,6 +768,38 @@ deriveHasParamInstances ''ListsOwnerships
     , "count"
     ]
 
+data ListsMembersCreateAll
+-- | Adds multiple members to a list.
+--
+-- You can perform request by using 'call':
+--
+-- @
+-- res <- 'call' twInfo mgr '$' 'listsMembersCreateAll' ('ListNameParam' "thimura/haskell") ('ScreenNameListParam' [\"thimura\", \"twitterapi\"])
+-- @
+--
+-- >>> listsMembersCreateAll (ListNameParam "thimura/haskell") (ScreenNameListParam ["thimura", "twitterapi"])
+-- APIRequestPost "https://api.twitter.com/1.1/lists/members/create_all.json" [("slug","haskell"),("owner_screen_name","thimura"),("screen_name","thimura,twitterapi")]
+-- >>> listsMembersCreateAll (ListIdParam 20849097) (UserIdListParam [69179963, 6253282])
+-- APIRequestPost "https://api.twitter.com/1.1/lists/members/create_all.json" [("list_id","20849097"),("user_id","69179963,6253282")]
+listsMembersCreateAll :: ListParam -> UserListParam -> APIRequest ListsMembersCreateAll List
+listsMembersCreateAll list users = APIRequestPost (endpoint ++ "lists/members/create_all.json") (mkListParam list ++ mkUserListParam users)
+
+data ListsMembersDestroyAll
+-- | Adds multiple members to a list.
+--
+-- You can perform request by using 'call':
+--
+-- @
+-- res <- 'call' twInfo mgr '$' 'listsMembersDestroyAll' ('ListNameParam' "thimura/haskell") ('ScreenNameListParam' [\"thimura\", \"twitterapi\"])
+-- @
+--
+-- >>> listsMembersDestroyAll (ListNameParam "thimura/haskell") (ScreenNameListParam ["thimura", "twitterapi"])
+-- APIRequestPost "https://api.twitter.com/1.1/lists/members/destroy_all.json" [("slug","haskell"),("owner_screen_name","thimura"),("screen_name","thimura,twitterapi")]
+-- >>> listsMembersDestroyAll (ListIdParam 20849097) (UserIdListParam [69179963, 6253282])
+-- APIRequestPost "https://api.twitter.com/1.1/lists/members/destroy_all.json" [("list_id","20849097"),("user_id","69179963,6253282")]
+listsMembersDestroyAll :: ListParam -> UserListParam -> APIRequest ListsMembersDestroyAll List
+listsMembersDestroyAll list users = APIRequestPost (endpoint ++ "lists/members/destroy_all.json") (mkListParam list ++ mkUserListParam users)
+
 data ListsMembers
 -- | Returns query data asks the members of the specified list.
 --
@@ -751,7 +816,8 @@ data ListsMembers
 listsMembers :: ListParam -> APIRequest ListsMembers (WithCursor UsersCursorKey User)
 listsMembers q = APIRequestGet (endpoint ++ "lists/members.json") (mkListParam q)
 deriveHasParamInstances ''ListsMembers
-    [ "cursor"
+    [ "count"
+    , "cursor"
     , "skip_status"
     ]
 

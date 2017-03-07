@@ -1,0 +1,10 @@
+flags:
+  twitter-types:
+    time15: true
+packages:
+- '.'
+- 'sample'
+extra-deps:
+- twitter-types-0.7.2.1
+- twitter-types-lens-0.7.2
+resolver: __RESOLVER__
