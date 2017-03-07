@@ -67,9 +67,7 @@ makeRequest' m url query = do
             if m == "POST"
             then HTTP.urlEncodedBody query
             else \r -> r { HTTP.queryString = HT.renderSimpleQuery False query }
-    return $ addParams $ req { HTTP.method = m
-                             , HTTP.checkStatus = \_ _ _ -> Nothing
-                             }
+    return $ addParams $ req { HTTP.method = m }
 
 getResponse :: MonadResource m
             => TWInfo
